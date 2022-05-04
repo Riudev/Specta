@@ -1,34 +1,15 @@
-////////////////////////////
-//////CONFIG LOAD///////////
-////////////////////////////
 const ytdl = require("discord-ytdl-core");
-const { canModifyQueue } = require("../util/nkm");
+const { specta } = require("../../events/guild/specta");
 const { Client, Collection, MessageEmbed, splitMessage, escapeMarkdown,MessageAttachment } = require("discord.js");
-const { attentionembed } = require("../util/attentionembed"); 
+const { embeds } = require("../events/guild/embeds"); 
 const createBar = require("string-progressbar");
 const lyricsFinder = require("lyrics-finder");
-const {
-  approveemoji,
-  denyemoji,
-  BOTNAME,
-} = require(`../config.json`);
-////////////////////////////
-//////COMMAND BEGIN/////////
-////////////////////////////
+const { PREFIX, COLOR, MAINCOLOR } = require (`../../config.json`);
+
 module.exports = {
   async play(song, message, client, filters) {
-    //VERY MESSY CODE WILL BE CLEANED SOON!
-    const { PRUNING, SOUNDCLOUD_CLIENT_ID } = require("../config.json");
-
+    const { PRUNING, SOUNDCLOUD_CLIENT_ID } = require("../../config.json");
     const queue = message.client.queue.get(message.guild.id);
-    
-    if (!song) {
-      queue.channel.leave();
-      message.client.queue.delete(message.guild.id);
-      const endembed = new MessageEmbed().setColor("#F0EAD6")
-        .setAuthor(`Music Queue ended.`, "https://cdn.discordapp.com/attachments/778600026280558617/781024479623118878/ezgif.com-gif-maker_1.gif")
-      return queue.textChannel.send(endembed).catch(console.error);
-    }
 
     let stream = null;
     let streamType = song.url.includes("youtube.com") ? "opus" : "ogg/opus";
@@ -133,15 +114,15 @@ module.exports = {
     }
     
   let thumb;
-    if (song.thumbnail === undefined) thumb = "https://cdn.discordapp.com/attachments/778600026280558617/781024479623118878/ezgif.com-gif-maker_1.gif";
+    if (song.thumbnail === undefined) thumb = " ";
     else thumb = song.thumbnail.url;
 
   try {
       let embed = new MessageEmbed()
       .setColor("#F0EAD6")
-      .setAuthor(`Started playing: ${song.title}`,'https://cdn.discordapp.com/attachments/778600026280558617/781024479623118878/ezgif.com-gif-maker_1.gif')
+      .setAuthor(`Started playing: ${song.title}`)
       var playingMessage = await queue.textChannel.send(embed);
-      var playingMessage = await queue.textChannel.send(`${song.url}`);
+      
       await playingMessage.react("⏭");
       await playingMessage.react("⏯");
       await playingMessage.react("🔉");
