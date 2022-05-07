@@ -18,7 +18,7 @@ async execute(message, args, client) {
 
     if (!channel) return embeds(message, "Please join a Voice Channel first");
     if (serverQueue && channel !== message.guild.me.voice.channel)
-      return attentionembed(message, `You must be in the same Voice Channel as me`);
+      return embeds(message, `You must be in the same Voice Channel as me`);
 
     if (!args.length)
       return embeds(message, `Usage: ${message.client.prefix}play <YouTube URL | Video Name | Soundcloud URL>`);
