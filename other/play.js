@@ -63,7 +63,7 @@ module.exports = {
       }
 
       console.error(error);
-      return attentionembed(message, `Error: ${error.message ? error.message : error}`);
+      return embeds(message, `Error: ${error.message ? error.message : error}`);
     }
 
     queue.connection.on("disconnect", () => message.client.queue.delete(message.guild.id));   
@@ -151,7 +151,7 @@ module.exports = {
         case "⏭":
           queue.playing = true;
           reaction.users.remove(user).catch(console.error);
-          if (!canModifyQueue(member)) return;
+          if (!specta(member)) return;
           queue.connection.dispatcher.end();
           queue.textChannel.send(`${user} ⏩ skipped the song`).catch(console.error);
           collector.stop();
@@ -159,7 +159,7 @@ module.exports = {
 
         case "⏯":
           reaction.users.remove(user).catch(console.error);
-          if (!canModifyQueue(member)) return;
+          if (!specta(member)) return;
           if (queue.playing) {
             queue.playing = !queue.playing;
             queue.connection.dispatcher.pause(true);
@@ -173,7 +173,7 @@ module.exports = {
 
         case "🔇":
           reaction.users.remove(user).catch(console.error);
-          if (!canModifyQueue(member)) return;
+          if (!specta(member)) return;
           if (queue.volume <= 0) {
             queue.volume = 100;
             queue.connection.dispatcher.setVolumeLogarithmic(100 / 100);
@@ -187,7 +187,7 @@ module.exports = {
 
         case "🔉":
           reaction.users.remove(user).catch(console.error);
-          if (!canModifyQueue(member)) return;
+          if (!specta(member)) return;
           if (queue.volume - 10 <= 0) queue.volume = 0;
           else queue.volume = queue.volume - 10;
           queue.connection.dispatcher.setVolumeLogarithmic(queue.volume / 100);
@@ -198,7 +198,7 @@ module.exports = {
 
         case "🔊":
           reaction.users.remove(user).catch(console.error);
-          if (!canModifyQueue(member)) return;
+          if (!specta(member)) return;
           if (queue.volume + 10 >= 100) queue.volume = 100;
           else queue.volume = queue.volume + 10;
           queue.connection.dispatcher.setVolumeLogarithmic(queue.volume / 100);
@@ -209,14 +209,14 @@ module.exports = {
 
         case "🔁":
           reaction.users.remove(user).catch(console.error);
-          if (!canModifyQueue(member)) return;
+          if (!specta(member)) return;
           queue.loop = !queue.loop;
           queue.textChannel.send(`Loop is now ${queue.loop ? "**on**" : "**off**"}`).catch(console.error);
           break;
 
         case "⏹":
           reaction.users.remove(user).catch(console.error);
-          if (!canModifyQueue(member)) return;
+          if (!specta(member)) return;
           queue.songs = [];
           queue.textChannel.send(`${user} ⏹ stopped the music!`).catch(console.error);
           try {
@@ -238,7 +238,7 @@ module.exports = {
             return message.channel
                   .send("There is no queue.")
                   .catch(console.error);
-          if (!canModifyQueue(member)) return;
+          if (!specta(member)) return;
           let songs = queue.songs;
           queue.songs = songs;
           for (let i = songs.length - 1; i > 1; i--) {
@@ -254,35 +254,33 @@ module.exports = {
          case "🎵":
         reaction.users.remove(user).catch(console.error);
         const song = queue.songs[0];
-        //get current song duration in s
+
         let minutes = song.duration.split(":")[0];   
         let seconds = song.duration.split(":")[1];    
         let ms = (Number(minutes)*60+Number(seconds));   
-        //get thumbnail
+
         let thumb;
-        if (song.thumbnail === undefined) thumb = "https://cdn.discordapp.com/attachments/778600026280558617/781024479623118878/ezgif.com-gif-maker_1.gif";
+        if (song.thumbnail === undefined) thumb = " ";
         else thumb = song.thumbnail.url;
-        //define current time
+
         const seek = (queue.connection.dispatcher.streamTime - queue.connection.dispatcher.pausedTime) / 1000;
-        //define left duration
+
         const left = ms - seek;
-        //define embed
         let nowPlaying = new MessageEmbed()
-          .setAuthor('♪Now playing♪','https://cdn.discordapp.com/attachments/778600026280558617/781024479623118878/ezgif.com-gif-maker_1.gif','http://harmonymusic.tk')
+          .setAuthor('Now playing♪')
           .setDescription(`[**${song.title}**](${song.url})`)
           .setThumbnail(song.thumbnail.url)
           .setColor("#F0EAD6")
           .setFooter(`Requested by: ${message.author.username}#${message.author.discriminator}`, message.member.user.displayAvatarURL({ dynamic: true }))
-      //if its a stream
+
       if(ms >= 10000) {
         nowPlaying.addField("\u200b", "🔴 LIVE", false);
-        //send approve msg
+
         return message.channel.send(nowPlaying);
       }
-      //If its not a stream 
+  
       if (ms > 0 && ms<10000) {
         nowPlaying.addField("\u200b", "**``[" + createBar((ms == 0 ? seek : ms), seek, 25, "▬", "🔘")[0] + "]``**\n**" + "\n[" + new Date(seek * 1000).toISOString().substr(11, 8) + " / " + (ms == 0 ? " ◉ LIVE" : new Date(ms * 1000).toISOString().substr(11, 8))+ "]**" + "\n" + "\n **Time Remaining:**" + "``" + new Date(left * 1000).toISOString().substr(11, 8) + "``", false );
-            //send approve msg
             return message.channel.send(nowPlaying);
           }
           break;
@@ -315,10 +313,12 @@ module.exports = {
           case "📑":
         
           reaction.users.remove(user).catch(console.error);
-          if (!canModifyQueue(member)) return;
+          if (!specta(member)) return;
           let lyrics = null;
+
           let temEmbed = new MessageEmbed()
-          .setAuthor("Searching...", "https://cdn.discordapp.com/attachments/778600026280558617/781024479623118878/ezgif.com-gif-maker_1.gif").setFooter("Lyrics")
+          .setAuthor("Searching")
+          .setFooter("Lyrics")
           .setColor("#F0EAD6")
           let result = await message.channel.send(temEmbed)
           try {
@@ -336,7 +336,7 @@ module.exports = {
           if (lyricsEmbed.description.length >= 2048)
       
             lyricsEmbed.description = `${lyricsEmbed.description.substr(0, 2045)}...`;
-            message.react(approveemoji);
+            message.react(" ");
           return result.edit(lyricsEmbed).catch(console.error);
 
           break;
