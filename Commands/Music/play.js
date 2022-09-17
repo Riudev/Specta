@@ -1,6 +1,6 @@
-const { play } = require("../Other/play");
+const { play } = require("../clound/play");
 const { Client, Collection, MessageEmbed } = require("discord.js");
-const { embeds } = require("../../Events/guild/embeds");
+const { embed } = require("../../events/guild/embed");
 const ytsr = require("youtube-sr")
 
 module.exports = {
@@ -27,9 +27,9 @@ async execute(message, args, client) {
 
     const permissions = channel.permissionsFor(message.client.user);
     if (!permissions.has("CONNECT"))
-      return embeds(message, "I need permissions to connect join your channel!");
+      return embed(message, "I need permissions to connect join your channel!");
     if (!permissions.has("SPEAK"))
-      return embeds(message, "I need permissions to speak in your channel");
+      return embed(message, "I need permissions to speak in your channel");
 
     const search = args.join(" ");
     const videoPattern = /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
@@ -94,9 +94,9 @@ async execute(message, args, client) {
           duration: songInfo.durationFormatted,
        };
       } catch (error) {
-        if (error.statusCode === 403) return embeds(message, "Max. uses of api Key, please refresh!");
+        if (error.statusCode === 403) return embed(message, "Max. uses of api Key, please refresh!");
         console.error(error);
-        return embeds(message, error.message);
+        return embed(message, error.message);
       }
     } 
  
@@ -111,7 +111,7 @@ async execute(message, args, client) {
        };
       } catch (error) {
         console.error(error);
-        return embeds(message, error);        
+        return embed(message, error);        
       }                                                               
     }
 
@@ -164,7 +164,7 @@ async execute(message, args, client) {
       console.error(error);
       message.client.queue.delete(message.guild.id);
       await channel.leave();
-      return embeds(message, `Could not join the channel: ${error}`);
+      return embed(message, `Could not join the channel: ${error}`);
     }
   }
 };
